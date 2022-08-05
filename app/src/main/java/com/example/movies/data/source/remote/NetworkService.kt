@@ -10,7 +10,7 @@ import retrofit2.http.Query
 
 interface NetworkService {
 
-    @GET("discover/movie?")
+    @GET("movie/popular?")
     suspend fun getMoviesByPageNumber(
         @Query("language") language: String,
         @Query("page") page: String,

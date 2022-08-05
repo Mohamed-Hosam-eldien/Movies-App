@@ -1,5 +1,6 @@
 package com.example.movies.data.source.remote
 
+import com.example.movies.data.models.genre.GenreList
 import com.example.movies.data.models.movie.Movie
 import retrofit2.Response
 import javax.inject.Inject
@@ -12,6 +13,10 @@ class RemoteDataSource @Inject constructor(
         language: String, pageNumber: String
     ): Response<Movie> {
         return networkService.getMoviesByPageNumber(language, pageNumber)
+    }
+
+    override suspend fun getGenres(language: String): Response<GenreList> {
+        return networkService.getGenres(language = language)
     }
 
 }

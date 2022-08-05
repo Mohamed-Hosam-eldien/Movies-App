@@ -1,5 +1,7 @@
 package com.example.movies.data.source.remote
 
+import com.example.movies.data.models.genre.Genre
+import com.example.movies.data.models.genre.GenreList
 import com.example.movies.data.models.movie.Movie
 import com.example.movies.utils.Constants
 import retrofit2.Response
@@ -8,10 +10,17 @@ import retrofit2.http.Query
 
 interface NetworkService {
 
-    @GET("discover/movie?api_key=${Constants.API_KEY}")
+    @GET("discover/movie?")
     suspend fun getMoviesByPageNumber(
         @Query("language") language: String,
-        @Query("page") page:String)
-    : Response<Movie>
+        @Query("page") page: String,
+        @Query("api_key") api_key: String = Constants.API_KEY
+    ): Response<Movie>
+
+    @GET("genre/list?")
+    suspend fun getGenres(
+        @Query("language") language: String,
+        @Query("api_key") api_key: String = Constants.API_KEY
+    ): Response<GenreList>
 
 }

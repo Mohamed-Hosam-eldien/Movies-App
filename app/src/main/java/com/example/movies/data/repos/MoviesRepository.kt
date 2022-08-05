@@ -1,5 +1,6 @@
 package com.example.movies.data.repos
 
+import com.example.movies.data.models.genre.GenreList
 import com.example.movies.data.models.movie.Movie
 import com.example.movies.data.source.remote.IRemoteDataSource
 import retrofit2.Response
@@ -13,6 +14,10 @@ class MoviesRepository @Inject constructor(
         language: String, pageNumber: String
     ): Response<Movie> {
         return remoteDataSource.getMoviesByPageNumber(language, pageNumber)
+    }
+
+    override suspend fun getGenre(language: String): Response<GenreList> {
+        return remoteDataSource.getGenres(language)
     }
 
 }

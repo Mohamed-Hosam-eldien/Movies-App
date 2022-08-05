@@ -12,16 +12,9 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    private val moviesViwModel: HomeViewModel by viewModels()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        moviesViwModel.getMoviesByPageNumber(Constants.language, "1")
-        moviesViwModel.getAllMovies.observe(this) {
-            Log.e("TAG", "onCreate MOVIES: $it")
-        }
 
     }
 }

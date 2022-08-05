@@ -26,6 +26,12 @@ android {
         }
     }
 
+    // hilt
+    kapt {
+        correctErrorTypes = true
+    }
+
+    // data binding
     buildFeatures {
         dataBinding true
     }
@@ -54,19 +60,24 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui-ktx:2.5.1'
 
     // Data binding
-    kapt "com.android.databinding:compiler:3.2.0-alpha10"
+    kapt 'androidx.databinding:databinding-compiler:7.2.2'
     kapt "androidx.databinding:databinding-common:7.2.2"
 
     // Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    // Gson
+    implementation 'com.google.code.gson:gson:2.9.0'
 
     // hilt
-    implementation 'com.google.dagger:hilt-android:2.38.1'
+    implementation 'com.google.dagger:hilt-android:2.43.2'
     implementation 'androidx.hilt:hilt-work:1.0.0'
-    implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03'
     kapt 'androidx.hilt:hilt-compiler:1.0.0'
-    kapt 'com.google.dagger:hilt-android-compiler:2.38.1'
+    kapt 'com.google.dagger:hilt-android-compiler:2.43.2'
+    implementation 'androidx.fragment:fragment-ktx:1.5.1'
+
+    // interceptor
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
 
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1'
@@ -78,7 +89,5 @@ dependencies {
     // Glide
     implementation 'com.github.bumptech.glide:glide:4.13.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.13.0'
-
-
 
 }

@@ -11,13 +11,13 @@ class MoviesRepository @Inject constructor(
 ) : IMoviesRepository {
 
     override suspend fun getMoviesByPageNumber(
-        language: String, pageNumber: String
+        pageNumber: String, genreId: String
     ): Response<Movie> {
-        return remoteDataSource.getMoviesByPageNumber(language, pageNumber)
+        return remoteDataSource.getMoviesByPageNumber(pageNumber, genreId)
     }
 
-    override suspend fun getGenre(language: String): Response<GenreList> {
-        return remoteDataSource.getGenres(language)
+    override suspend fun getGenre(): Response<GenreList> {
+        return remoteDataSource.getGenres()
     }
 
 }

@@ -1,6 +1,5 @@
 package com.example.movies.data.source.remote
 
-import com.example.movies.data.models.genre.Genre
 import com.example.movies.data.models.genre.GenreList
 import com.example.movies.data.models.movie.Movie
 import com.example.movies.utils.Constants
@@ -12,14 +11,14 @@ interface NetworkService {
 
     @GET("movie/popular?")
     suspend fun getMoviesByPageNumber(
-        @Query("language") language: String,
+        @Query("language") language: String = Constants.language,
         @Query("page") page: String,
+        @Query("with_genres") with_genres: String,
         @Query("api_key") api_key: String = Constants.API_KEY
     ): Response<Movie>
 
     @GET("genre/list?")
     suspend fun getGenres(
-        @Query("language") language: String,
         @Query("api_key") api_key: String = Constants.API_KEY
     ): Response<GenreList>
 

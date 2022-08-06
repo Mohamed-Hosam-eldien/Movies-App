@@ -7,8 +7,8 @@ import retrofit2.Response
 interface IRemoteDataSource {
 
     suspend fun getMoviesByPageNumber(
-        language:String, pageNumber:String
+        pageNumber:String, genre:String
     ): Response<Movie>
 
-    suspend fun getGenres(language: String): Response<GenreList>
+    suspend fun getGenres(): Response<GenreList>
 }

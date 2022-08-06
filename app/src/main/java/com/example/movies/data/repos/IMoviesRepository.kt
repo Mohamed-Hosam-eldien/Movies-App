@@ -7,8 +7,8 @@ import retrofit2.Response
 interface IMoviesRepository {
 
     suspend fun getMoviesByPageNumber(
-        language:String, pageNumber:String
+        pageNumber:String, genreId:String = ""
     ) : Response<Movie>
 
-    suspend fun getGenre(language: String): Response<GenreList>
+    suspend fun getGenre(): Response<GenreList>
 }

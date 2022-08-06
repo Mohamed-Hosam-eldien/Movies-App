@@ -23,13 +23,22 @@ class HomeViewModel @Inject constructor(
     var getAllGenres: LiveData<GenreList> = genres
 
 
-    fun getMoviesByPageNumber(language: String, pageNumber: String) = viewModelScope.launch {
-        val moviesResult = moviesRepository.getMoviesByPageNumber(language, pageNumber)
+    fun getAllMovies(pageNumber: String, genreId: String) = viewModelScope.launch {
+        allMovies = MutableLiveData()
+        getAllMovies = allMovies
+        val moviesResult = moviesRepository.getMoviesByPageNumber(pageNumber, genreId)
         allMovies.postValue(moviesResult.body())
     }
 
-    fun getGenre(language: String) = viewModelScope.launch {
-        val genreResult = moviesRepository.getGenre(language)
+//    fun getMoviesByGenre(pageNumber: String, genreId: String) = viewModelScope.launch {
+//        allMovies = MutableLiveData()
+//        getAllMovies = allMovies
+//        val moviesResult = moviesRepository.getMoviesByPageNumber(pageNumber, genreId = genreId)
+//        allMovies.postValue(moviesResult.body())
+//    }
+
+    fun getGenre() = viewModelScope.launch {
+        val genreResult = moviesRepository.getGenre()
         genres.postValue(genreResult.body())
     }
 

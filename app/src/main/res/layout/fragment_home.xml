@@ -66,6 +66,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:padding="12dp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

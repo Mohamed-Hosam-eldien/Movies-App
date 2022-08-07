@@ -95,10 +95,6 @@ class HomeFragment : Fragment() {
         moviesViwModel.getAllMovies(pageNumber.toString(), genreId)
     }
 
-    private fun getMoviesByGenreSelected() {
-        moviesViwModel.getAllMovies(pageNumber.toString(), genreId)
-    }
-
     private fun setAllMovies() = moviesViwModel.getAllMovies.observeOnce(requireActivity()) {
         it?.let {
             moviesAdapter.setMoviesByPagination(it.results)
@@ -150,7 +146,7 @@ class HomeFragment : Fragment() {
         binding.genreChipGroup.setOnCheckedChangeListener { group, checkedId ->
             genreId = group.findViewById<Chip>(checkedId).tag.toString()
             setScrollValuesToDefault()
-            getMoviesByGenreSelected()
+            getAllMovies()
             setMoviesByGenre()
         }
     }

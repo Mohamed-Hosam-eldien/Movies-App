@@ -16,7 +16,7 @@ class MoviesRepository @Inject constructor(
         return remoteDataSource.getMoviesByPageNumber(pageNumber, genreId)
     }
 
-    override suspend fun getGenre(): Response<GenreList> {
+    override suspend fun getGenres(): Response<GenreList> {
         return remoteDataSource.getGenres()
     }
 

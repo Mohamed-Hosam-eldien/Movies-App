@@ -7,8 +7,9 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.movies.data.models.movie.Result
 import com.example.movies.databinding.MovieItemBinding
+import com.example.movies.utils.MoviesListState
 
-class MoviesAdapter : RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>() {
+class MoviesAdapter(private val onClickMovie: OnClickMovie) : RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>() {
 
     private var moviesList = arrayListOf<Result>()
 
@@ -23,8 +24,9 @@ class MoviesAdapter : RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: MoviesViewHolder, position: Int) {
-        val currentGenre = moviesList[position]
-        holder.bind(currentGenre)
+        val currentMovie = moviesList[position]
+        holder.bind(currentMovie)
+        holder.itemView.setOnClickListener { onClickMovie.onClick(currentMovie) }
     }
 
     override fun getItemCount(): Int = moviesList.size
@@ -38,12 +40,19 @@ class MoviesAdapter : RecyclerView.Adapter<MoviesAdapter.MoviesViewHolder>() {
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    fun setMoviesByPagination(newData: List<Result>) {
+    private fun setMoviesByPagination(newData: List<Result>) {
         moviesList.addAll(newData)
         notifyDataSetChanged()
     }
 
-    fun setMoviesByGenre(newData: List<Result>) {
+    fun setMoviesList(movieList: MoviesListState, newData: List<Result>) {
+        when(movieList) {
+            MoviesListState.PAGINATION -> setMoviesByPagination(newData)
+            MoviesListState.GENRE -> setMoviesByGenre(newData)
+        }
+    }
+
+    private fun setMoviesByGenre(newData: List<Result>) {
         val moviesDiffUtil = MoviesDiffUtil(moviesList, newData)
         val diffUtilResult = DiffUtil.calculateDiff(moviesDiffUtil)
         moviesList.clear()

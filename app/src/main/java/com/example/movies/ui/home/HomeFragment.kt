@@ -6,24 +6,30 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.movies.R
+import com.example.movies.data.models.movie.Result
 import com.example.movies.databinding.FragmentHomeBinding
 import com.example.movies.ui.home.adapter.MoviesAdapter
+import com.example.movies.ui.home.adapter.OnClickMovie
+import com.example.movies.utils.MoviesListState
 import com.example.movies.utils.observeOnce
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipDrawable
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), OnClickMovie {
 
     private val moviesViwModel: HomeViewModel by viewModels()
     private lateinit var binding: FragmentHomeBinding
-    private val moviesAdapter by lazy { MoviesAdapter() }
+    private val moviesAdapter by lazy { MoviesAdapter(this) }
+
     private var genreId = ""
 
+    /** init pagination variables */
     private var isLoading = true
     private var pageNumber = 1
     private var itemCount = 20
@@ -38,22 +44,17 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        // init binding
-        val view = inflater.inflate(R.layout.fragment_home, container, false)
-        binding = FragmentHomeBinding.bind(view)
+        /** init binding view */
+        binding = FragmentHomeBinding.bind(
+            inflater.inflate(R.layout.fragment_home, container, false)
+        )
 
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        getMoviesByGenre()
-
         initMoviesRecycler()
-
-        getAllMovies()
-
-        setAllMovies()
 
         getAllGenres()
     }
@@ -62,6 +63,7 @@ class HomeFragment : Fragment() {
         adapter = moviesAdapter
         layoutManager = GridLayoutManager(context, 2)
 
+        /** to implement pagination to recyclerView */
         addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
 
@@ -81,7 +83,7 @@ class HomeFragment : Fragment() {
                     if (!isLoading && (totalItemCount - visibleItemCount) <= (pastVisibleItem + itemCount)) {
                         pageNumber++
                         getAllMovies()
-                        setAllMovies()
+                        setAllMovies(MoviesListState.PAGINATION)
                         isLoading = true
                     }
                 }
@@ -95,33 +97,27 @@ class HomeFragment : Fragment() {
         moviesViwModel.getAllMovies(pageNumber.toString(), genreId)
     }
 
-    private fun setAllMovies() = moviesViwModel.getAllMovies.observeOnce(requireActivity()) {
-        it?.let {
-            moviesAdapter.setMoviesByPagination(it.results)
-        }
-    }
-
-    private fun setMoviesByGenre() = moviesViwModel.getAllMovies.observeOnce(requireActivity()) {
-        it?.let {
-            moviesAdapter.setMoviesByGenre(it.results)
-        }
+    private fun setAllMovies(movieListState: MoviesListState) =
+        moviesViwModel.getAllMovies.observeOnce(viewLifecycleOwner) {
+            it?.let {
+                moviesAdapter.setMoviesList(movieListState, it.results)
+            }
     }
 
     private fun getAllGenres() {
-        moviesViwModel.getGenre()
-        moviesViwModel.getAllGenres.observeOnce(requireActivity()) { it ->
+        moviesViwModel.getGenres()
+        moviesViwModel.getAllGenres.observeOnce(viewLifecycleOwner) { it ->
 
-            // set first element in genres as "All Movies"
-            addGenresToChipGroup("All")
+            /** set first element in genres as "All Movies" */
+            addGenresToChipGroup(getString(R.string.all))
 
-            // set all other genres from api
+            /** set all other genres from api */
             it.genres.forEach {
                 addGenresToChipGroup(it.name, it.id.toString())
             }
 
-            // set check on first genre "All"
+            /** set check on first genre "All" */
             binding.genreChipGroup.check(binding.genreChipGroup.getChildAt(0).id)
-
         }
     }
 
@@ -143,11 +139,11 @@ class HomeFragment : Fragment() {
     }
 
     private fun getMoviesByGenre() {
-        binding.genreChipGroup.setOnCheckedChangeListener { group, checkedId ->
-            genreId = group.findViewById<Chip>(checkedId).tag.toString()
+        binding.genreChipGroup.setOnCheckedStateChangeListener { group, _ ->
+            genreId = group.findViewById<Chip>(group.checkedChipId).tag.toString()
             setScrollValuesToDefault()
             getAllMovies()
-            setMoviesByGenre()
+            setAllMovies(MoviesListState.GENRE)
         }
     }
 
@@ -158,6 +154,17 @@ class HomeFragment : Fragment() {
         pastVisibleItem = 0
         pageNumber = 1
         isLoading = true
+    }
+
+    override fun onClick(movieDetails: Result) {
+        val bundle = Bundle()
+        bundle.putSerializable("selectedMovie",movieDetails)
+        findNavController().navigate(R.id.action_homeFragment_to_detailsFragment, bundle)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        getMoviesByGenre()
     }
 
 }

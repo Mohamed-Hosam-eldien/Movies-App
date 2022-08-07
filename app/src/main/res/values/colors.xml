@@ -10,6 +10,7 @@
     <color name="orange">#FF6838</color>
     <color name="darkG">#4F5053</color>
     <color name="trans">#C2010938</color>
+    <color name="yellow">#F9CE22</color>
 
     // chip colors
     <color name="checkedChipBackgroundColor">@color/orange</color>

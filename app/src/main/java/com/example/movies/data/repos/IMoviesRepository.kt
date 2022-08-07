@@ -10,5 +10,5 @@ interface IMoviesRepository {
         pageNumber:String, genreId:String = ""
     ) : Response<Movie>
 
-    suspend fun getGenre(): Response<GenreList>
+    suspend fun getGenres(): Response<GenreList>
 }

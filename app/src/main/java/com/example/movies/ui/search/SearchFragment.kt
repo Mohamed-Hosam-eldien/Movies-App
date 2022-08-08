@@ -1,36 +1,33 @@
-package com.example.movies.ui.home
+package com.example.movies.ui.search
 
 import android.os.Bundle
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.movies.R
 import com.example.movies.data.models.movie.Result
-import com.example.movies.databinding.FragmentHomeBinding
+import com.example.movies.databinding.FragmentSearchBinding
 import com.example.movies.ui.adapter.MoviesAdapter
 import com.example.movies.ui.adapter.OnClickMovie
 import com.example.movies.utils.Constants
 import com.example.movies.utils.MoviesListState
-import com.example.movies.utils.initGenreChip
 import com.example.movies.utils.observeOnce
-import com.google.android.material.chip.Chip
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class HomeFragment : Fragment(), OnClickMovie {
+class SearchFragment : Fragment(), OnClickMovie {
 
-    private val moviesViwModel: HomeViewModel by viewModels()
-    private lateinit var binding: FragmentHomeBinding
+    private val searchViwModel: SearchViewModel by viewModels()
+    private lateinit var binding: FragmentSearchBinding
+    private lateinit var searchQuery: String
+
     private val moviesAdapter by lazy { MoviesAdapter(this) }
-
-    private lateinit var genreId: String
-    private var selectedChipName = ""
 
     /** init pagination variables */
     private var isLoading = true
@@ -42,29 +39,37 @@ class HomeFragment : Fragment(), OnClickMovie {
     private var pastVisibleItem = 0
 
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        searchQuery = requireArguments().getString(Constants.QUERY).toString()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
 
-        /** init binding view */
-        binding = FragmentHomeBinding.bind(
-            inflater.inflate(R.layout.fragment_home, container, false)
+        binding = FragmentSearchBinding.bind(
+            LayoutInflater.from(requireActivity())
+                .inflate(R.layout.fragment_search, container, false)
         )
 
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        initMoviesRecycler()
+        binding.searchView.onActionViewExpanded()
+        binding.searchView.setQuery(searchQuery, true)
+        binding.searchView.setOnSearchClickListener{ binding.searchView.onActionViewExpanded() }
 
-        getAllGenres()
+        initRecyclerView()
 
         searchListener()
     }
 
-    private fun initMoviesRecycler() = binding.recyclerMovies.apply {
+    private fun initRecyclerView() = binding.recyclerView.apply {
         adapter = moviesAdapter
         layoutManager = GridLayoutManager(context, 2)
 
@@ -87,8 +92,8 @@ class HomeFragment : Fragment(), OnClickMovie {
 
                     if (!isLoading && (totalItemCount - visibleItemCount) <= (pastVisibleItem + itemCount)) {
                         pageNumber++
-                        getAllMovies()
-                        setAllMovies(MoviesListState.PAGINATION)
+                        getMoviesByQuery(searchQuery)
+                        setMoviesToAdapter(MoviesListState.PAGINATION)
                         isLoading = true
                     }
                 }
@@ -98,56 +103,16 @@ class HomeFragment : Fragment(), OnClickMovie {
 
     }
 
-    private fun getAllMovies() {
-        moviesViwModel.getAllMovies(pageNumber.toString(), genreId)
+    private fun getMoviesByQuery(query: String) {
+        searchViwModel.getMoviesByQuery(query, pageNumber.toString())
     }
 
-    private fun setAllMovies(movieListState: MoviesListState) =
-        moviesViwModel.getAllMovies.observeOnce(viewLifecycleOwner) {
+    private fun setMoviesToAdapter(moviesListState: MoviesListState) =
+        searchViwModel.getSearchResult.observeOnce(viewLifecycleOwner) {
             it?.let {
-                moviesAdapter.setMoviesList(movieListState, it.results)
+                moviesAdapter.setMoviesList(moviesListState, it.results)
             }
         }
-
-    private fun getAllGenres() {
-        moviesViwModel.getGenres()
-        moviesViwModel.getAllGenres.observeOnce(requireActivity()) { it ->
-
-            /** set first element in genres as "All Movies" */
-            addGenresToChipGroup(getString(R.string.all))
-
-            /** set all other genres from api */
-            it.genres.forEach {
-                addGenresToChipGroup(it.name, it.id.toString())
-            }
-
-            /** set check on first genre "All" */
-            if(selectedChipName.isEmpty())
-                binding.genreChipGroup.check(binding.genreChipGroup.getChildAt(0).id)
-        }
-    }
-
-    private fun addGenresToChipGroup(genreName: String, genreId: String = "") {
-        val chip = Chip(requireActivity())
-        chip.text = genreName
-        chip.tag = genreId
-
-        chip.initGenreChip(selectedChipName, requireActivity())
-
-        binding.genreChipGroup.addView(chip)
-    }
-
-    private fun getMoviesByGenre() =
-        binding.genreChipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            selectedChipName = binding.genreChipGroup
-                .findViewById<Chip?>(checkedIds[0]).text.toString()
-
-            genreId = group.findViewById<Chip>(group.checkedChipId).tag.toString()
-            setScrollValuesToDefault()
-            getAllMovies()
-            setAllMovies(MoviesListState.GENRE)
-        }
-
 
     private fun setScrollValuesToDefault() {
         previousTotal = 0
@@ -162,7 +127,13 @@ class HomeFragment : Fragment(), OnClickMovie {
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
 
-                if (!query.isNullOrEmpty()) navigateToSearchFragment(query)
+                if (!query.isNullOrEmpty()) {
+                    searchQuery = query
+                    setScrollValuesToDefault()
+                    getMoviesByQuery(searchQuery)
+                    setMoviesToAdapter(MoviesListState.SEARCH)
+                    binding.searchView.clearFocus()
+                }
                 return true
             }
 
@@ -171,34 +142,22 @@ class HomeFragment : Fragment(), OnClickMovie {
             }
         })
 
-        /** to open searchView when click to any position on view */
-        binding.searchView.setOnClickListener {
+        binding.searchView.setOnClickListener{
             binding.searchView.requestFocus()
             binding.searchView.onActionViewExpanded()
         }
     }
 
-    private fun navigateToSearchFragment(query: String?) {
-        val bundle = Bundle()
-        bundle.putString(Constants.QUERY, query)
-        findNavController().navigate(R.id.action_homeFragment_to_searchFragment, bundle)
-        emptySearchView()
-    }
-
-    private fun emptySearchView() {
-        binding.searchView.setQuery("", true)
-        binding.searchView.onActionViewCollapsed()
+    override fun onResume() {
+        super.onResume()
+        getMoviesByQuery(searchQuery)
+        setMoviesToAdapter(MoviesListState.PAGINATION)
     }
 
     override fun onClick(movieDetails: Result) {
         val bundle = Bundle()
         bundle.putSerializable(Constants.SELECTED_MOVIE, movieDetails)
-        findNavController().navigate(R.id.action_homeFragment_to_detailsFragment, bundle)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        getMoviesByGenre()
+        findNavController().navigate(R.id.action_searchFragment_to_detailsFragment, bundle)
     }
 
 }

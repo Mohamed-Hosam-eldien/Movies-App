@@ -24,5 +24,8 @@
         <item name="colorAccent">@color/orange</item>
     </style>
 
+    <style name="ratingColor" parent="@style/Theme.AppCompat">
+        <item name="colorAccent">@color/yellow</item>
+    </style>
 
 </resources>

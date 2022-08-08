@@ -1,8 +1,10 @@
-package com.example.movies.ui.home.adapter
+package com.example.movies.ui.adapter
 
 import android.widget.ImageView
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
+import com.example.movies.utils.Constants
+
 
 class MovieItemBinding {
 
@@ -10,7 +12,8 @@ class MovieItemBinding {
         @BindingAdapter("loadMovieImage")
         @JvmStatic
         fun loadMovieImage(imageView: ImageView, imageUrl: String?) {
-            Glide.with(imageView).load("https://image.tmdb.org/t/p/w500$imageUrl").into(imageView)
+            Glide.with(imageView)
+                .load("${Constants.IMAGE_URL}$imageUrl").into(imageView)
         }
     }
 

@@ -1,4 +1,4 @@
-package com.example.movies.ui.home.adapter
+package com.example.movies.ui.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -49,7 +49,16 @@ class MoviesAdapter(private val onClickMovie: OnClickMovie) : RecyclerView.Adapt
         when(movieList) {
             MoviesListState.PAGINATION -> setMoviesByPagination(newData)
             MoviesListState.GENRE -> setMoviesByGenre(newData)
+            MoviesListState.SEARCH -> setMoviesBySearch(newData)
         }
+    }
+
+    private fun setMoviesBySearch(newData: List<Result>) {
+        val moviesDiffUtil = MoviesDiffUtil(moviesList, newData)
+        val diffUtilResult = DiffUtil.calculateDiff(moviesDiffUtil)
+        moviesList.clear()
+        moviesList.addAll(newData)
+        diffUtilResult.dispatchUpdatesTo(this)
     }
 
     private fun setMoviesByGenre(newData: List<Result>) {

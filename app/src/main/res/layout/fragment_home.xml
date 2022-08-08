@@ -26,6 +26,9 @@
 
                 <androidx.appcompat.widget.SearchView
                     android:id="@+id/searchView"
+                    app:queryHint="search in movies"
+                    android:autofillHints="asdasd"
+                    app:defaultQueryHint="search in movies"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 

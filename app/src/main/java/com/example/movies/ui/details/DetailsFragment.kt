@@ -10,7 +10,8 @@ import com.denzcoskun.imageslider.models.SlideModel
 import com.example.movies.R
 import com.example.movies.data.models.movie.Result
 import com.example.movies.databinding.FragmentDetailsBinding
-import com.example.movies.ui.MainActivity
+import com.example.movies.ui.main.MainActivity
+import com.example.movies.utils.Constants
 
 class DetailsFragment : Fragment() {
 
@@ -22,7 +23,7 @@ class DetailsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
 
-        selectedMovie = requireArguments().getSerializable("selectedMovie") as Result
+        selectedMovie = requireArguments().getSerializable(Constants.SELECTED_MOVIE) as Result
 
         binding = FragmentDetailsBinding.bind(
             LayoutInflater.from(requireActivity())
@@ -37,19 +38,24 @@ class DetailsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         initImageSlider()
+
+        initMovieDetails()
+
+    }
+
+    private fun initMovieDetails() {
         binding.txtTitle.text = selectedMovie.title
         binding.txtDescription.text = selectedMovie.overview
         binding.txtDate.text = selectedMovie.releaseDate
         binding.rating.rating = (selectedMovie.voteAverage / 2).toFloat()
-
     }
 
     private fun initImageSlider() {
         val imageList = ArrayList<SlideModel>()
         imageList.add(SlideModel(
-            "https://image.tmdb.org/t/p/w500${selectedMovie.posterPath}", ScaleTypes.CENTER_INSIDE))
+            "${Constants.IMAGE_URL}${selectedMovie.posterPath}", ScaleTypes.CENTER_INSIDE))
         imageList.add(SlideModel(
-            "https://image.tmdb.org/t/p/w500${selectedMovie.backdropPath}", ScaleTypes.FIT))
+            "${Constants.IMAGE_URL}${selectedMovie.backdropPath}", ScaleTypes.FIT))
         binding.imageSlider.setImageList(imageList)
     }
 

@@ -13,15 +13,26 @@
         <action
             android:id="@+id/action_homeFragment_to_detailsFragment"
             app:destination="@id/detailsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
     </fragment>
     <fragment
         android:id="@+id/detailsFragment"
         android:name="com.example.movies.ui.details.DetailsFragment">
-        <action
-            android:id="@+id/action_detailsFragment_to_homeFragment"
-            app:destination="@id/homeFragment" />
         <argument
             android:name="selectedMovie"
             app:argType="com.example.movies.data.models.movie.Result" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.movies.ui.search.SearchFragment"
+        android:label="Search" >
+        <argument
+            android:name="query"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_searchFragment_to_detailsFragment"
+            app:destination="@id/detailsFragment" />
     </fragment>
 </navigation>

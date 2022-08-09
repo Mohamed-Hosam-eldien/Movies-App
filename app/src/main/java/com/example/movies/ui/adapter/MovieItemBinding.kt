@@ -5,7 +5,6 @@ import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
 import com.example.movies.utils.Constants
 
-
 class MovieItemBinding {
 
     companion object {
@@ -16,5 +15,4 @@ class MovieItemBinding {
                 .load("${Constants.IMAGE_URL}$imageUrl").into(imageView)
         }
     }
-
 }

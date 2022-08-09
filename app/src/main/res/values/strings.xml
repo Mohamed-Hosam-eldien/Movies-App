@@ -3,5 +3,11 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="all">All</string>
-    <string name="watch_now">watch Now</string>
+    <string name="no_network_connection">No Internet Connection.</string>
+    <string name="timeout2">Timeout!</string>
+    <string name="timeout1">timeout</string>
+    <string name="api_invalid">Invalid API key: You must be granted a valid key.</string>
+    <string name="not_found">The resource you requested could not be found.</string>
+    <string name="no_movies">There are no movies</string>
+    <string name="close">Close</string>
 </resources>

@@ -24,12 +24,11 @@ class DetailsFragment : Fragment() {
     ): View {
 
         selectedMovie = requireArguments().getSerializable(Constants.SELECTED_MOVIE) as Result
+        (requireActivity() as MainActivity).supportActionBar?.title = selectedMovie.title
 
         binding = FragmentDetailsBinding.bind(
             LayoutInflater.from(requireActivity())
                 .inflate(R.layout.fragment_details, container, false) )
-
-        (requireActivity() as MainActivity).supportActionBar?.title = selectedMovie.title
 
         return binding.root
     }
@@ -40,14 +39,6 @@ class DetailsFragment : Fragment() {
         initImageSlider()
 
         initMovieDetails()
-
-    }
-
-    private fun initMovieDetails() {
-        binding.txtTitle.text = selectedMovie.title
-        binding.txtDescription.text = selectedMovie.overview
-        binding.txtDate.text = selectedMovie.releaseDate
-        binding.rating.rating = (selectedMovie.voteAverage / 2).toFloat()
     }
 
     private fun initImageSlider() {
@@ -57,6 +48,13 @@ class DetailsFragment : Fragment() {
         imageList.add(SlideModel(
             "${Constants.IMAGE_URL}${selectedMovie.backdropPath}", ScaleTypes.FIT))
         binding.imageSlider.setImageList(imageList)
+    }
+
+    private fun initMovieDetails() {
+        binding.txtTitle.text = selectedMovie.title
+        binding.txtDescription.text = selectedMovie.overview
+        binding.txtDate.text = selectedMovie.releaseDate
+        binding.rating.rating = (selectedMovie.voteAverage / 2).toFloat()
     }
 
 }

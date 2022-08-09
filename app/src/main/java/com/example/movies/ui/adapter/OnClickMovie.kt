@@ -4,6 +4,6 @@ import com.example.movies.data.models.movie.Result
 
 interface OnClickMovie {
 
-    fun onClick(movieDetails: Result)
+    fun onClickToMovie(movieDetails: Result)
 
 }

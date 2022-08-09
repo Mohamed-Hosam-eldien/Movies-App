@@ -15,9 +15,7 @@ import com.example.movies.data.models.movie.Result
 import com.example.movies.databinding.FragmentSearchBinding
 import com.example.movies.ui.adapter.MoviesAdapter
 import com.example.movies.ui.adapter.OnClickMovie
-import com.example.movies.utils.Constants
-import com.example.movies.utils.MoviesListState
-import com.example.movies.utils.observeOnce
+import com.example.movies.utils.*
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -60,13 +58,21 @@ class SearchFragment : Fragment(), OnClickMovie {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.searchView.onActionViewExpanded()
-        binding.searchView.setQuery(searchQuery, true)
-        binding.searchView.setOnSearchClickListener{ binding.searchView.onActionViewExpanded() }
+        handleSearchView()
 
         initRecyclerView()
 
+        getMoviesByQuery(searchQuery)
+
+        setMoviesToAdapter(MoviesListState.PAGINATION)
+
         searchListener()
+    }
+
+    private fun handleSearchView() {
+        binding.searchView.onActionViewExpanded()
+        binding.searchView.setQuery(searchQuery, true)
+        binding.searchView.setOnSearchClickListener { binding.searchView.onActionViewExpanded() }
     }
 
     private fun initRecyclerView() = binding.recyclerView.apply {
@@ -108,11 +114,30 @@ class SearchFragment : Fragment(), OnClickMovie {
     }
 
     private fun setMoviesToAdapter(moviesListState: MoviesListState) =
-        searchViwModel.getSearchResult.observeOnce(viewLifecycleOwner) {
-            it?.let {
-                moviesAdapter.setMoviesList(moviesListState, it.results)
+        searchViwModel.getSearchResult.observe(viewLifecycleOwner) { response ->
+            when (response) {
+                is NetworkResult.Success -> {
+                    response.let {
+                        binding.progressLoading.visibility = View.GONE
+                        moviesAdapter.setMoviesList(moviesListState, response.data!!.results)
+                    }
+                }
+
+                is NetworkResult.Error -> {
+                    binding.progressLoading.visibility = View.GONE
+                    showErrorSnackBar(response.message.toString())
+                }
+
+                is NetworkResult.Loading -> {
+                    binding.progressLoading.visibility = View.VISIBLE
+                }
             }
+
         }
+
+    private fun showErrorSnackBar(message: String) {
+        this.showSnackBar(message)
+    }
 
     private fun setScrollValuesToDefault() {
         previousTotal = 0
@@ -126,7 +151,6 @@ class SearchFragment : Fragment(), OnClickMovie {
     private fun searchListener() {
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-
                 if (!query.isNullOrEmpty()) {
                     searchQuery = query
                     setScrollValuesToDefault()
@@ -142,22 +166,17 @@ class SearchFragment : Fragment(), OnClickMovie {
             }
         })
 
-        binding.searchView.setOnClickListener{
+        /** to open searchView when click to any position on view */
+        binding.searchView.setOnClickListener {
             binding.searchView.requestFocus()
             binding.searchView.onActionViewExpanded()
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        getMoviesByQuery(searchQuery)
-        setMoviesToAdapter(MoviesListState.PAGINATION)
-    }
-
-    override fun onClick(movieDetails: Result) {
-        val bundle = Bundle()
-        bundle.putSerializable(Constants.SELECTED_MOVIE, movieDetails)
-        findNavController().navigate(R.id.action_searchFragment_to_detailsFragment, bundle)
+    override fun onClickToMovie(movieDetails: Result) {
+        val selectedMovie = Bundle()
+        selectedMovie.putSerializable(Constants.SELECTED_MOVIE, movieDetails)
+        findNavController().navigate(R.id.action_searchFragment_to_detailsFragment, selectedMovie)
     }
 
 }

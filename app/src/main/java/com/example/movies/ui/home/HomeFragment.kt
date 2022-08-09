@@ -15,10 +15,7 @@ import com.example.movies.data.models.movie.Result
 import com.example.movies.databinding.FragmentHomeBinding
 import com.example.movies.ui.adapter.MoviesAdapter
 import com.example.movies.ui.adapter.OnClickMovie
-import com.example.movies.utils.Constants
-import com.example.movies.utils.MoviesListState
-import com.example.movies.utils.initGenreChip
-import com.example.movies.utils.observeOnce
+import com.example.movies.utils.*
 import com.google.android.material.chip.Chip
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -29,8 +26,8 @@ class HomeFragment : Fragment(), OnClickMovie {
     private lateinit var binding: FragmentHomeBinding
     private val moviesAdapter by lazy { MoviesAdapter(this) }
 
-    private lateinit var genreId: String
-    private var selectedChipName = ""
+    private lateinit var selectedGenreId: String
+    private var selectedGenreName = ""
 
     /** init pagination variables */
     private var isLoading = true
@@ -61,6 +58,8 @@ class HomeFragment : Fragment(), OnClickMovie {
 
         getAllGenres()
 
+        getMoviesByGenre()
+
         searchListener()
     }
 
@@ -68,7 +67,7 @@ class HomeFragment : Fragment(), OnClickMovie {
         adapter = moviesAdapter
         layoutManager = GridLayoutManager(context, 2)
 
-        /** to implement pagination to recyclerView */
+        /** to implement recyclerView pagination */
         addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
 
@@ -98,32 +97,37 @@ class HomeFragment : Fragment(), OnClickMovie {
 
     }
 
-    private fun getAllMovies() {
-        moviesViwModel.getAllMovies(pageNumber.toString(), genreId)
-    }
-
-    private fun setAllMovies(movieListState: MoviesListState) =
-        moviesViwModel.getAllMovies.observeOnce(viewLifecycleOwner) {
-            it?.let {
-                moviesAdapter.setMoviesList(movieListState, it.results)
-            }
-        }
-
     private fun getAllGenres() {
         moviesViwModel.getGenres()
-        moviesViwModel.getAllGenres.observeOnce(requireActivity()) { it ->
 
-            /** set first element in genres as "All Movies" */
-            addGenresToChipGroup(getString(R.string.all))
+        moviesViwModel.getAllGenres.observeOnce(requireActivity()) { response ->
+            when (response) {
+                is NetworkResult.Success -> {
+                    response.data?.let { allGenres ->
+                        /** set first element in genres as "All Movies" to chip group */
+                        addGenresToChipGroup(getString(R.string.all))
 
-            /** set all other genres from api */
-            it.genres.forEach {
-                addGenresToChipGroup(it.name, it.id.toString())
+                        /** set all other genres from api to chip group */
+                        allGenres.genres.forEach { genre ->
+                            addGenresToChipGroup(genre.name, genre.id.toString())
+                        }
+
+                        /** set check on first genre "All" */
+                        if (selectedGenreName.isEmpty())
+                            binding.genreChipGroup.check(binding.genreChipGroup.getChildAt(0).id)
+                    }
+                }
+
+                is NetworkResult.Error -> {
+                    binding.progressLoading.visibility = View.GONE
+                    showErrorSnackBar(response.message.toString())
+                }
+
+                is NetworkResult.Loading -> {
+                    binding.progressLoading.visibility = View.VISIBLE
+                }
+
             }
-
-            /** set check on first genre "All" */
-            if(selectedChipName.isEmpty())
-                binding.genreChipGroup.check(binding.genreChipGroup.getChildAt(0).id)
         }
     }
 
@@ -132,22 +136,49 @@ class HomeFragment : Fragment(), OnClickMovie {
         chip.text = genreName
         chip.tag = genreId
 
-        chip.initGenreChip(selectedChipName, requireActivity())
+        chip.initGenreChip(selectedGenreName, requireActivity())
 
         binding.genreChipGroup.addView(chip)
     }
 
     private fun getMoviesByGenre() =
-        binding.genreChipGroup.setOnCheckedStateChangeListener { group, checkedIds ->
-            selectedChipName = binding.genreChipGroup
-                .findViewById<Chip?>(checkedIds[0]).text.toString()
-
-            genreId = group.findViewById<Chip>(group.checkedChipId).tag.toString()
+        binding.genreChipGroup.setOnCheckedStateChangeListener { group, _ ->
+            val selectedGenre = group.findViewById<Chip>(group.checkedChipId)
+            selectedGenreName = selectedGenre.text.toString()
+            selectedGenreId = selectedGenre.tag.toString()
             setScrollValuesToDefault()
             getAllMovies()
             setAllMovies(MoviesListState.GENRE)
         }
 
+    private fun getAllMovies() {
+        moviesViwModel.getAllMovies(pageNumber.toString(), selectedGenreId)
+    }
+
+    private fun setAllMovies(movieListState: MoviesListState) =
+        moviesViwModel.getAllMovies.observe(viewLifecycleOwner) { response ->
+            when (response) {
+                is NetworkResult.Success -> {
+                    response.data?.let {
+                        binding.progressLoading.visibility = View.GONE
+                        moviesAdapter.setMoviesList(movieListState, it.results)
+                    }
+                }
+
+                is NetworkResult.Error -> {
+                    binding.progressLoading.visibility = View.GONE
+                    showErrorSnackBar(response.message.toString())
+                }
+
+                is NetworkResult.Loading -> {
+                    binding.progressLoading.visibility = View.VISIBLE
+                }
+            }
+        }
+
+    private fun showErrorSnackBar(message: String) {
+        this.showSnackBar(message)
+    }
 
     private fun setScrollValuesToDefault() {
         previousTotal = 0
@@ -161,7 +192,6 @@ class HomeFragment : Fragment(), OnClickMovie {
     private fun searchListener() {
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-
                 if (!query.isNullOrEmpty()) navigateToSearchFragment(query)
                 return true
             }
@@ -179,9 +209,9 @@ class HomeFragment : Fragment(), OnClickMovie {
     }
 
     private fun navigateToSearchFragment(query: String?) {
-        val bundle = Bundle()
-        bundle.putString(Constants.QUERY, query)
-        findNavController().navigate(R.id.action_homeFragment_to_searchFragment, bundle)
+        val searchQuery = Bundle()
+        searchQuery.putString(Constants.QUERY, query)
+        findNavController().navigate(R.id.action_homeFragment_to_searchFragment, searchQuery)
         emptySearchView()
     }
 
@@ -190,15 +220,10 @@ class HomeFragment : Fragment(), OnClickMovie {
         binding.searchView.onActionViewCollapsed()
     }
 
-    override fun onClick(movieDetails: Result) {
-        val bundle = Bundle()
-        bundle.putSerializable(Constants.SELECTED_MOVIE, movieDetails)
-        findNavController().navigate(R.id.action_homeFragment_to_detailsFragment, bundle)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        getMoviesByGenre()
+    override fun onClickToMovie(movieDetails: Result) {
+        val selectedMovie = Bundle()
+        selectedMovie.putSerializable(Constants.SELECTED_MOVIE, movieDetails)
+        findNavController().navigate(R.id.action_homeFragment_to_detailsFragment, selectedMovie)
     }
 
 }

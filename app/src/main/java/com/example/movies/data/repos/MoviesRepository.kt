@@ -1,15 +1,16 @@
 package com.example.movies.data.repos
 
-import com.example.movies.data.models.genre.GenreList
+import com.example.movies.data.models.genre.GenreResponse
 import com.example.movies.data.models.movie.MoviesResponse
 import com.example.movies.data.source.remote.IRemoteDataSource
-import com.example.movies.utils.NetworkResult
 import retrofit2.Response
 import javax.inject.Inject
+
 
 class MoviesRepository @Inject constructor(
     private val remoteDataSource: IRemoteDataSource
 ) : IMoviesRepository {
+
 
     override suspend fun getMoviesByPageNumber(
         pageNumber: String, genreId: String
@@ -17,7 +18,7 @@ class MoviesRepository @Inject constructor(
         return remoteDataSource.getMoviesByPageNumber(pageNumber, genreId)
     }
 
-    override suspend fun getGenres(): Response<GenreList> {
+    override suspend fun getGenres(): Response<GenreResponse> {
         return remoteDataSource.getGenres()
     }
 

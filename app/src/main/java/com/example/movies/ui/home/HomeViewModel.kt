@@ -3,7 +3,7 @@ package com.example.movies.ui.home
 import android.app.Application
 import androidx.lifecycle.*
 import com.example.movies.R
-import com.example.movies.data.models.genre.GenreList
+import com.example.movies.data.models.genre.GenreResponse
 import com.example.movies.data.models.movie.MoviesResponse
 import com.example.movies.data.repos.IMoviesRepository
 import com.example.movies.utils.Constants
@@ -24,8 +24,8 @@ class HomeViewModel @Inject constructor(
     private lateinit var allMovies: MutableLiveData<NetworkResult<MoviesResponse>>
     lateinit var getAllMovies: LiveData<NetworkResult<MoviesResponse>>
 
-    private var allGenres: MutableLiveData<NetworkResult<GenreList>> = MutableLiveData()
-    var getAllGenres: LiveData<NetworkResult<GenreList>> = allGenres
+    private var allGenres: MutableLiveData<NetworkResult<GenreResponse>> = MutableLiveData()
+    var getAllGenres: LiveData<NetworkResult<GenreResponse>> = allGenres
 
     fun getAllMovies(pageNumber: String, genreId: String) = viewModelScope.launch {
         allMovies = MutableLiveData()
@@ -78,8 +78,8 @@ class HomeViewModel @Inject constructor(
     }
 
     private fun handleGenreResponseState(
-        response: Response<GenreList>
-    ): NetworkResult<GenreList> {
+        response: Response<GenreResponse>
+    ): NetworkResult<GenreResponse> {
 
         when {
             response.message().toString().contains(context.getString(R.string.timeout1)) -> {

@@ -5,31 +5,31 @@ import java.io.Serializable
 
 data class Result(
     @SerializedName("adult")
-    val adult: Boolean,
+    val adult: Boolean = false,
     @SerializedName("backdrop_path")
-    val backdropPath: String?,
+    val backdropPath: String? = "",
     @SerializedName("genre_ids")
-    val genresID: ArrayList<Int>,
+    val genresID: ArrayList<Int> = arrayListOf(),
     @SerializedName("id")
-    val id: Int,
+    val id: Int = 0,
     @SerializedName("original_language")
-    val originalLanguage: String,
+    val originalLanguage: String = "",
     @SerializedName("original_title")
-    val originalTitle: String,
+    val originalTitle: String = "",
     @SerializedName("overview")
-    val overview: String,
+    val overview: String = "",
     @SerializedName("popularity")
-    val popularity: Double,
+    val popularity: Double = 0.0,
     @SerializedName("poster_path")
-    val posterPath: String?,
+    val posterPath: String? = "",
     @SerializedName("release_date")
-    val releaseDate: String,
+    val releaseDate: String = "",
     @SerializedName("title")
-    val title: String,
+    val title: String = "",
     @SerializedName("video")
-    val video: Boolean,
+    val video: Boolean = false,
     @SerializedName("vote_average")
-    val voteAverage: Double,
+    val voteAverage: Double = 0.0,
     @SerializedName("vote_count")
-    val voteCount: Int
+    val voteCount: Int = 0
 ): Serializable

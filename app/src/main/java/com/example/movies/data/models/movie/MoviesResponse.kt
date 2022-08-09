@@ -5,11 +5,11 @@ import java.io.Serializable
 
 data class MoviesResponse(
     @SerializedName("page")
-    val page: Int,
+    val page: Int = 0,
     @SerializedName("results")
-    val results: ArrayList<Result>,
+    val results: ArrayList<Result> = arrayListOf(),
     @SerializedName("total_pages")
-    val totalPages: Int,
+    val totalPages: Int = 0,
     @SerializedName("total_results")
-    val totalResults: Int
+    val totalResults: Int = 0
 ): Serializable

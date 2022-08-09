@@ -1,4 +1,4 @@
-package com.example.movies.data
+package com.example.movies.data.viewmodel
 
 import android.app.Application
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule

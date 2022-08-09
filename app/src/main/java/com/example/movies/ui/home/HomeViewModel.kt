@@ -21,22 +21,22 @@ class HomeViewModel @Inject constructor(
 
     private val context = getApplication<Application>()
     
-    private lateinit var allMovies: MutableLiveData<NetworkResult<MoviesResponse>>
+    private lateinit var _getAllMovies: MutableLiveData<NetworkResult<MoviesResponse>>
     lateinit var getAllMovies: LiveData<NetworkResult<MoviesResponse>>
 
-    private var allGenres: MutableLiveData<NetworkResult<GenreResponse>> = MutableLiveData()
-    var getAllGenres: LiveData<NetworkResult<GenreResponse>> = allGenres
+    private var _getAllGenres: MutableLiveData<NetworkResult<GenreResponse>> = MutableLiveData()
+    var getAllGenres: LiveData<NetworkResult<GenreResponse>> = _getAllGenres
 
     fun getAllMovies(pageNumber: String, genreId: String) = viewModelScope.launch {
-        allMovies = MutableLiveData()
-        getAllMovies = allMovies
-        allMovies.postValue(NetworkResult.Loading())
+        _getAllMovies = MutableLiveData()
+        getAllMovies = _getAllMovies
+        _getAllMovies.postValue(NetworkResult.Loading())
 
         if (Constants.isNetworkAvailable(context)) {
             val moviesResult = moviesRepository.getMoviesByPageNumber(pageNumber, genreId)
-            allMovies.postValue(handleMoviesResponseState(moviesResult))
+            _getAllMovies.postValue(handleMoviesResponseState(moviesResult))
         } else {
-            allMovies.postValue(NetworkResult.Error(context
+            _getAllMovies.postValue(NetworkResult.Error(context
                 .getString(R.string.no_network_connection)))
         }
 
@@ -70,9 +70,9 @@ class HomeViewModel @Inject constructor(
     fun getGenres() = viewModelScope.launch {
         if (Constants.isNetworkAvailable(context)) {
             val genresResult = moviesRepository.getGenres()
-            allGenres.postValue(handleGenreResponseState(genresResult))
+            _getAllGenres.postValue(handleGenreResponseState(genresResult))
         } else {
-            allGenres.postValue(NetworkResult.Error(context
+            _getAllGenres.postValue(NetworkResult.Error(context
                 .getString(R.string.no_network_connection)))
         }
     }

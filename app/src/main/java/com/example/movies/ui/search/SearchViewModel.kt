@@ -20,18 +20,18 @@ class SearchViewModel @Inject constructor(
 
     private val context = getApplication<Application>()
 
-    private lateinit var searchMovies: MutableLiveData<NetworkResult<MoviesResponse>>
+    private lateinit var _getSearchResult: MutableLiveData<NetworkResult<MoviesResponse>>
     lateinit var getSearchResult: LiveData<NetworkResult<MoviesResponse>>
 
     fun getMoviesByQuery(query: String, pageNum: String) = viewModelScope.launch {
-        searchMovies = MutableLiveData()
-        getSearchResult = searchMovies
+        _getSearchResult = MutableLiveData()
+        getSearchResult = _getSearchResult
 
         if(Constants.isNetworkAvailable(context)) {
             val result = remoteDataSource.getMoviesBySearch(query, pageNum)
-            searchMovies.postValue(handleSearchResponseState(result))
+            _getSearchResult.postValue(handleSearchResponseState(result))
         } else {
-            searchMovies.postValue(NetworkResult.Error(context.getString(R.string.no_network_connection)))
+            _getSearchResult.postValue(NetworkResult.Error(context.getString(R.string.no_network_connection)))
         }
     }
 
